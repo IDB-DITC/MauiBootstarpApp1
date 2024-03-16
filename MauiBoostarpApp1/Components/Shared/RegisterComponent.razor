@@ -1,0 +1,52 @@
+﻿@page "/register"
+@using System.Text.Json
+@using System.Text;
+@using MauiBoostarpApp1.Models
+@using System.Net.Http.Json
+@inject AuthService authService
+@inject NavigationManager NavManager
+
+<EditForm Model="RegistrationModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="card">
+        <div class="card-header">Register Account</div>
+        <div class="card-body">
+            <div class="form-group mt-2">
+                <label>Email Address</label>
+                <InputText class="form-control" @bind-Value="RegistrationModel.Email"></InputText>
+            </div>
+            <div class="form-group mt-2">
+                <label>Password</label>
+                <InputText class="form-control" @bind-Value="RegistrationModel.Password"></InputText>
+            </div>
+            <div class="form-group mt-2">
+                <label>Confirm Password</label>
+                <InputText class="form-control" @bind-Value="RegistrationModel.ConfirmPassword"></InputText>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+    </div>
+</EditForm>
+@code {
+    private RegisterModel RegistrationModel { get; set; } = new();
+
+    private async Task HandleRegister()
+    {
+        var success = await authService.Register(RegistrationModel);
+        if (success)
+        {
+            await Application.Current.MainPage.DisplayAlert("Success", "Registration Success", "Ok");
+            NavManager.NavigateTo("/", replace: true);
+            RegistrationModel = new RegisterModel();
+        }
+        else
+        {
+            await Application.Current.MainPage.DisplayAlert("Alert", "Registration Fail", "Ok");
+            return;
+        }
+    }
+}

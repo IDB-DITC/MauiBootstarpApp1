@@ -1,0 +1,176 @@
+﻿@page "/edit/{catId:int}"
+@inject ProductService service
+@inject NavigationManager nav
+
+
+<EditForm Model="model" OnValidSubmit="SaveData">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div>
+		<label for="name">Name:</label>
+		<InputText id="name" class="form-control" required @bind-Value="model.Name" />
+		<ValidationMessage For="()=> model.Name" />
+	</div>
+
+	<table class="table table-active table-bordered table-hover">
+		<tr>
+			<th>Product Name</th>
+			<th>Product Number</th>
+			<th>Color</th>
+			<th>Standard Cost</th>
+			<th>List Price</th>
+			<th>Size</th>
+			<th>Weight</th>
+			<th>
+				<button type="button" class="btn btn-outline-info" @onclick="AddProduct">Add Product</button>
+			</th>
+		</tr>
+		@foreach (var prod in model.Products)
+		{
+			<tr>
+				<td>
+					<InputText class="form-control" @bind-Value="prod.Name" />
+					<ValidationMessage For="()=> prod.Name" />
+				</td>
+				<td>
+					<InputText class="form-control" @bind-Value="prod.ProductNumber" />
+					<ValidationMessage For="()=> prod.ProductNumber" />
+				</td>
+				<td>
+					<InputText class="form-control" @bind-Value="prod.Color" />
+					<ValidationMessage For="()=> prod.Color" />
+				</td>
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.StandardCost" />
+					<ValidationMessage For="()=> prod.StandardCost" />
+				</td>
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.ListPrice" />
+					<ValidationMessage For="()=> prod.ListPrice" />
+				</td>
+
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.Size" />
+					<ValidationMessage For="()=> prod.Size" />
+				</td>
+
+				<td>
+					<InputNumber class="form-control" @bind-Value="prod.Weight" />
+					<ValidationMessage For="()=> prod.Weight" />
+				</td>
+				<td>
+					<button type="button" class="btn btn-outline-warning" @onclick="()=> DeleteProduct(prod)">Delete</button>
+				</td>
+			</tr>
+
+
+		}
+	</table>
+
+	<button type="submit" class="btn btn-outline-success">
+		Save
+	</button>
+	<button type="button" class="btn btn-outline-danger" @onclick="DataDelete">
+		Delete
+	</button>
+	<NavLink class="btn btn-outline-info" href="cat">
+		Cancel
+	</NavLink>
+</EditForm>
+
+@code {
+
+
+
+
+	[Parameter]
+	public int catId { get; set; }
+
+
+	private ProductCategory model = new ProductCategory();
+
+
+	// public CategoryEdit()
+	// {
+	// 	JS.InvokeVoidAsync("alert", "CategoryEdit CTOR!");
+	// }
+	// protected override void OnParametersSet()
+	// {
+	// 	JS.InvokeVoidAsync("alert", "OnParametersSet!");
+	// 	base.OnParametersSet();
+	// }
+	// protected override async Task OnParametersSetAsync()
+	// {
+	// 	await JS.InvokeVoidAsync("alert", "OnParametersSetAsync!");
+	// 	await base.OnParametersSetAsync();
+	// }
+	// protected override void OnInitialized()
+	// {
+	// 	JS.InvokeVoidAsync("alert", "OnInitialized!");
+	// 	base.OnInitialized();
+	// }
+	protected override async Task OnInitializedAsync()
+	{
+		//await JS.InvokeVoidAsync("alert", "OnInitializedAsync!");
+		this.model = await this.service.GetById(catId);
+
+		await base.OnInitializedAsync();
+	}
+
+
+	
+
+	// protected override void OnAfterRender(bool firstRender)
+	// {
+	// 	JS.InvokeVoidAsync("alert", $"OnAfterRender firstRender={firstRender}");
+	// 	base.OnAfterRender(firstRender);
+	// }
+	// protected override async Task OnAfterRenderAsync(bool firstRender)
+	// {
+	// 	await JS.InvokeVoidAsync("alert", $"OnAfterRender firstRender={firstRender}");
+	// 	await base.OnAfterRenderAsync(firstRender);
+	// }
+
+
+	// protected override bool ShouldRender()
+	// {
+	// 	JS.InvokeVoidAsync("alert", "ShouldRender!");
+	// 	return base.ShouldRender();
+	// }
+
+
+	public async Task SaveData()
+	{
+		var response = await service.Update(model);
+
+		if (response.IsSuccessStatusCode)
+		{
+			nav.NavigateTo("/cat");
+		}
+
+
+	}
+
+	void AddProduct()
+	{
+		model.Products?.Add(new Product());
+	}
+	void DeleteProduct(Product item)
+	{
+		model.Products?.Remove(item);
+
+	}
+
+	async Task DataDelete()
+	{
+		var response = await service.Delete(catId);
+
+		if (response.IsSuccessStatusCode)
+		{
+			nav.NavigateTo("/cat");
+		}
+
+	}
+
+
+}

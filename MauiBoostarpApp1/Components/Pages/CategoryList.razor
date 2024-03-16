@@ -1,0 +1,107 @@
+﻿@inject ProductService service
+@inject IJSRuntime js
+@page "/cat"
+
+<h3>CategoryList</h3>
+<NavLink class="nav-link" href="add">Add</NavLink>
+<br />
+<hr />
+<table class="table table-responsive table-striped table-hover">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var cat in data)
+		{
+
+			<tr>
+				<td>@cat.ProductCategoryID</td>
+				<td>@cat.Name</td>
+				<td>
+					<ol>
+						@foreach (var product in cat.Products)
+						{
+							<li>
+								<dl>
+									<dt>Name</dt>
+									<dd>@product.Name</dd>
+									<dt>Number</dt>
+									<dd>@product.ProductNumber</dd>
+									<dt>Color</dt>
+									<dd>@product.Color</dd>
+								</dl>
+							</li>
+						}
+					</ol>
+				</td>
+				<td class="btn-group">
+					<a class=" btn btn-outline-info" href="/edit/@cat.ProductCategoryID">Edit</a>
+					<button class="btn btn-outline-danger" @onclick="()=> DeleteData(cat)">
+						Delete
+					</button>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+<SfGrid  AllowFiltering="true" AllowSorting="true" AllowPaging="true" DataSource="@data">
+	<GridPageSettings PageSize="6"></GridPageSettings>
+	<GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+	<GridColumns>
+		<GridColumn Field=@nameof(ProductCategory.ProductCategoryID) HeaderText="Category ID" IsPrimaryKey="true" TextAlign="TextAlign.Right" Width="90"></GridColumn>
+		<GridColumn Field=@nameof(ProductCategory.Name) HeaderText="Product Name" Width="120"></GridColumn>
+
+	</GridColumns>
+</SfGrid>
+@code {
+
+	private IList<ProductCategory>? data = new List<ProductCategory>();
+	//private List<Product> data = new List<Product>();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		await loadData();
+
+	}
+
+	async Task loadData()
+	{
+		try
+		{
+			this.data = await this.service.GetAll();
+		}
+		catch (Exception ex)
+		{
+
+		}
+	}
+
+	async Task DeleteData(ProductCategory category)
+	{
+		//var confirm = await js.InvokeAsync<bool>("confirm", $"delete data of {category.Name}?");
+
+		string confirm = await Application.Current.MainPage.DisplayActionSheet($"Delete data of {category.Name}?",  "Cancel", "OK" );
+
+
+
+		if (confirm != "OK") return;
+
+
+		var result = await this.service.Delete(category.ProductCategoryID);
+
+		if (result.IsSuccessStatusCode)
+		{
+			await loadData();
+		}
+		this.StateHasChanged();
+	}
+
+
+
+}
